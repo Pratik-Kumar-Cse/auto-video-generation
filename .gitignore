@@ -3,6 +3,7 @@ __pycache__
 temp/*
 sounds/*
 output/*
+data/*
 images/*
 *.zip
 *.srt
@@ -12,8 +13,39 @@ images/*
 subtitles/*
 /venv
 client_secret.json
+token.json
 main.py-oauth2.json
 .DS_Store
 Backend/output*
+Backend/data*
 Songs/
 venv/
+
+
+__pycache__/
+.pytest_cache/
+venv
+*.pyc
+.DS_Store/
+.env
+.env/
+logs/
+temp/
+.idea/
+.vscode/
+
+dump.rdb
+
+# Poetry
+.cache/
+poetry.lock
+__pypackages__/
+
+
+# Build and distribution
+dist/
+build/
+
+
+.venv
+.cache

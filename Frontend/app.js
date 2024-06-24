@@ -1,15 +1,32 @@
 const videoSubject = document.querySelector("#videoSubject");
+const videoInputType = document.querySelector("#videoInputType");
+const videoType = document.querySelector("#videoType");
 const aiModel = document.querySelector("#aiModel");
-const voice = document.querySelector("#voice");
-const zipUrl = document.querySelector("#zipUrl");
-const paragraphNumber = document.querySelector("#paragraphNumber");
 const youtubeToggle = document.querySelector("#youtubeUploadToggle");
 const useMusicToggle = document.querySelector("#useMusicToggle");
+const instagramToggle = document.querySelector("#instagramUploadToggle");
 const customPrompt = document.querySelector("#customPrompt");
 const generateButton = document.querySelector("#generateButton");
 const cancelButton = document.querySelector("#cancelButton");
+const scriptContainer = document.querySelector("#scriptContainer");
+const scriptContent = document.querySelector("#scriptContent");
+const generateScriptButton = document.querySelector("#generateScriptButton");
 
 const advancedOptionsToggle = document.querySelector("#advancedOptionsToggle");
+
+const scriptLoader = document.querySelector("#scriptLoader");
+
+const linkInput = document.querySelector("#linkInput");
+const linkInputField = document.querySelector("#linkInputField");
+
+videoInputType.addEventListener("change", function () {
+  if (this.value === "youtubeURL" || this.value === "blogLink") {
+    linkInput.style.display = "block";
+  } else {
+    linkInput.style.display = "none";
+    linkInputField.value = "";
+  }
+});
 
 advancedOptionsToggle.addEventListener("click", () => {
   // Change Emoji, from ▼ to ▲ and vice versa
@@ -20,7 +37,6 @@ advancedOptionsToggle.addEventListener("click", () => {
   const advancedOptions = document.querySelector("#advancedOptions");
   advancedOptions.classList.toggle("hidden");
 });
-
 
 const cancelGeneration = () => {
   console.log("Canceling generation...");
@@ -61,33 +77,39 @@ const generateVideo = () => {
 
   // Get values from input fields
   const videoSubjectValue = videoSubject.value;
+  const linkInputFieldValue = linkInputField.value;
+  const linkInputValue = linkInput.value;
+  const videoInputTypeValue = videoInputType.value;
   const aiModelValue = aiModel.value;
-  const voiceValue = voice.value;
-  const paragraphNumberValue = paragraphNumber.value;
+  const videoTypeValue = videoType.value;
   const youtubeUpload = youtubeToggle.checked;
   const useMusicToggleState = useMusicToggle.checked;
+  const instagramUpload = instagramToggle.checked;
   const threads = document.querySelector("#threads").value;
-  const zipUrlValue = zipUrl.value;
-  const customPromptValue = customPrompt.value;
   const subtitlesPosition = document.querySelector("#subtitlesPosition").value;
   const colorHexCode = document.querySelector("#subtitlesColor").value;
+  const templates = document.querySelector("#templates").value;
 
+  const script = scriptContent.textContent.trim();
 
   const url = "http://localhost:8080/api/generate";
 
   // Construct data to be sent to the server
   const data = {
+    videoInputType: videoInputTypeValue,
+    linkInput: linkInputValue,
     videoSubject: videoSubjectValue,
+    linkInputField: linkInputFieldValue,
+    videoType: videoTypeValue,
     aiModel: aiModelValue,
-    voice: voiceValue,
-    paragraphNumber: paragraphNumberValue,
     automateYoutubeUpload: youtubeUpload,
     useMusic: useMusicToggleState,
-    zipUrl: zipUrlValue,
+    automateInstagramUpload: instagramUpload,
     threads: threads,
     subtitlesPosition: subtitlesPosition,
-    customPrompt: customPromptValue,
     color: colorHexCode,
+    templates: templates,
+    script: script,
   };
 
   // Send the actual request to the server
@@ -134,8 +156,20 @@ document.addEventListener("DOMContentLoaded", (event) => {
 });
 
 // Save the data to localStorage when the user changes the value
-toggles = ["youtubeUploadToggle", "useMusicToggle", "reuseChoicesToggle"];
-fields = ["aiModel", "voice", "paragraphNumber", "videoSubject", "zipUrl", "customPrompt", "threads", "subtitlesPosition", "subtitlesColor"];
+toggles = ["youtubeUploadToggle", "instagramUploadToggle", "useMusicToggle"];
+fields = [
+  "videoInputType",
+  "linkInput",
+  "videoType",
+  "aiModel",
+  "videoSubject",
+  "linkInputField",
+  "customPrompt",
+  "threads",
+  "subtitlesPosition",
+  "subtitlesColor",
+  "templates",
+];
 
 document.addEventListener("DOMContentLoaded", () => {
   toggles.forEach((id) => {
@@ -144,11 +178,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const storedReuseValue = localStorage.getItem("reuseChoicesToggleValue");
 
     if (toggle && storedValue !== null && storedReuseValue === "true") {
-        toggle.checked = storedValue === "true";
+      toggle.checked = storedValue === "true";
     }
     // Attach change listener to update localStorage
     toggle.addEventListener("change", (event) => {
-        localStorage.setItem(`${id}Value`, event.target.checked);
+      localStorage.setItem(`${id}Value`, event.target.checked);
     });
   });
 
@@ -166,3 +200,53 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+const generateScript = () => {
+  generateScriptButton.disabled = true;
+  generateScriptButton.classList.add("hidden");
+
+  // Show the loader
+  scriptLoader.classList.remove("hidden");
+
+  const videoSubjectValue = videoSubject.value;
+  const linkInputFieldValue = linkInputField.value;
+  const linkInputValue = linkInput.value;
+  const videoInputTypeValue = videoInputType.value;
+  const videoTypeValue = videoType.value;
+
+  fetch("http://localhost:8080/api/generate-script", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      videoInputType: videoInputTypeValue,
+      linkInput: linkInputValue,
+      videoSubject: videoSubjectValue,
+      linkInputField: linkInputFieldValue,
+      videoType: videoTypeValue,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Hide the loader
+      scriptLoader.classList.add("hidden");
+      if (data.success) {
+        scriptContent.innerHTML = data.script;
+        scriptContainer.classList.remove("hidden");
+        generateScriptButton.disabled = false;
+        generateScriptButton.classList.remove("hidden");
+        generateButton.classList.remove("hidden"); // Show the "Generate Video" button
+      } else {
+        alert("Failed to generate script. Please try again.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again later.");
+      // Hide the loader
+      scriptLoader.classList.add("hidden");
+    });
+};
+
+generateScriptButton.addEventListener("click", generateScript);

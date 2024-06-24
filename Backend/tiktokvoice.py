@@ -134,7 +134,12 @@ def tts(
         if get_api_response().status_code == 200:
             print(colored("[+] TTS Service available!", "green"))
         else:
-            print(colored("[-] TTS Service not available and probably temporarily rate limited, try again later..." , "red"))
+            print(
+                colored(
+                    "[-] TTS Service not available and probably temporarily rate limited, try again later...",
+                    "red",
+                )
+            )
             return
 
     # checking if arguments are valid
